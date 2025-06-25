@@ -1,0 +1,61 @@
+; ------------------------------------------------------------------------------
+; Power-Up Punch / Puño Incremento
+; Deals damage to the target, then raises user's Attack by 1 stage
+; Causa daño al objetivo y aumenta el Ataque del usuario en 1 nivel
+; ------------------------------------------------------------------------------
+
+.relativeinclude on
+.nds
+.arm
+
+.definelabel MaxSize, 0x2598
+
+.include "lib/stdlib_eu.asm"
+.include "lib/dunlib_eu.asm"
+.definelabel MoveStartAddress, 0x02330B74
+.definelabel MoveJumpAddress, 0x0233310C
+
+.create "./code_out.bin", 0x02330B74
+	.org MoveStartAddress
+	.area MaxSize
+	
+	push {r5, r6} 
+	sub r13,r13,#0x4
+	mov r3, #0x100
+	ldr r5, [r9, #0xb4]
+	ldrb r10, [r5, #0x60]
+	cmp r10, #101
+	beq @@hasIronFist
+	ldrb r10, [r5, #0x61]
+	cmp r10, #101
+	bne @@NoIronFist
+	
+@@hasIronFist:
+	mov r0, r9
+mov r3,#0x180
+
+@@NoIronFist:
+	mov r0, r9
+	mov r1, r4
+	mov r2, r8
+	str r7, [sp]
+	bl DealDamage
+cmp r0, #0x0 ; Compare if the move damaged the opponent
+		beq end
+ mov r0, #0 ; argument #4 UnkArg4
+    str r0, [r13]
+    mov r0, #0 ; argument #5 UnkArg5
+    str r0, [r13, #+0x4]
+    mov r0, r9 
+    mov r1, r9 
+    mov r2, #0 
+    mov r3, #1 
+    bl AttackStatUp
+end:
+	add r13,r13,#0x4
+mov r10, r0
+	pop {r5, r6}
+	b MoveJumpAddress
+	.pool
+	.endarea
+.close

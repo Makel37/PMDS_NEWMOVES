@@ -1,0 +1,48 @@
+; ------------------------------------------------------------------------------
+; U-Turn / Ida y Vuelta (Also for Volt Switch / Voltiocambio and Flip Turn / Viraje)
+; Deals damage to the target up to 2 tiles away, then moves back 1 tile
+; Causa daño a un enemigo hasta a 2 casillas de distancia y retrocede 1 casilla
+; ------------------------------------------------------------------------------
+
+.relativeinclude on
+.nds
+.arm
+
+.definelabel MaxSize, 0x2598
+
+.include "lib/stdlib_eu.asm"
+.include "lib/dunlib_eu.asm"
+.definelabel MoveStartAddress, 0x02330B74
+.definelabel MoveJumpAddress, 0x0233310C
+.definelabel Stepback, 0x2320C38
+
+.create "./code_out.bin", 0x02330B74
+	.org MoveStartAddress
+	.area MaxSize
+                         sub r13,r13,#0x4
+                         mov r0, r9
+                         mov r1, r4
+                         mov r2, r8
+                         mov r3, #0x100
+                         str r7, [r13]
+                         bl DealDamage
+                         cmp r0,#0
+                         beq end
+                         
+                         mov r0, r9
+                         ldr  r1, [r9, #0xb4]
+                         ldrb r2, [r1, #0x4c]
+                         add  r2, r2, #4
+                         and  r2, r2, #7
+                         mov  r1, r2
+                         mov r2, #1
+                         mov r3, #296 ; Whatever Text String you want (296 can be safely edited)
+                         bl Stepback
+
+end:
+                         mov r10, #1
+                         add r13,r13,#0x4
+                         b MoveJumpAddress
+                         .pool
+            .endarea
+.close
